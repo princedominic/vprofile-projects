@@ -1,34 +1,32 @@
 def COLOR_MAP = [
-    'SUCCESS': 'good', 
+    'SUCCESS': 'good',
     'FAILURE': 'danger',
 ]
 
 pipeline {
     agent any
 
-    
-
     environment {
-        cluster = "vproappProd65"
-        service = "vproapptask-service-prod"
+        cluster = "vproappProd"
+        service = "vproappptask-stack-prod"
     }
 
     stages {
-         stage('Deploy to Prod ecs') {
+        stage('Deploy to Prod ecs') {
           steps {
         withAWS(credentials: 'awscreds', region: 'us-east-1') {
           sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
         }
       }
-    }
+     }
 
+    }
     post {
         always {
             echo 'Slack Notifications.'
-            slackSend channel: '#all-mydevops',
+            slackSend channel: '#jenkinscicd',
                 color: COLOR_MAP[currentBuild.currentResult],
-                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
-        }  
+                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info available at: ${env.BUILD_URL}"
+        }
     }
-    
 }
